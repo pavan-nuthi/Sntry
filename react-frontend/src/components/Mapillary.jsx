@@ -167,7 +167,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
             <div className="absolute w-8 h-8 rounded-full border-2 border-rose-500/50 animate-ping" />
           )}
           <div
-            className={`rounded-full border-2 border-[#0E1117] shadow-lg cursor-pointer transition-transform hover:scale-125 hover:z-50 ${station.risk_score > 0.45 ? 'w-5 h-5' : 'w-4 h-4'
+            className={`rounded-full border-2 border-white/70 shadow-lg cursor-pointer transition-transform hover:scale-125 hover:z-50 ${station.risk_score > 0.45 ? 'w-5 h-5' : 'w-4 h-4'
               }`}
             style={{ backgroundColor: color }}
           />
@@ -242,7 +242,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
   };
 
   return (
-    <div className="w-full h-full relative border border-slate-200 dark:border-warm-300 rounded-md overflow-hidden shadow-2xl">
+    <div className="w-full h-full relative border border-warm-300 rounded-md overflow-hidden shadow-2xl">
       <Map
         initialViewState={{
           longitude: -95.7129,
@@ -304,13 +304,13 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
             className="z-50"
             closeButton={false}
           >
-            <div className="p-3 bg-white dark:bg-warm-100 border border-slate-200 dark:border-warm-400 rounded-md shadow-2xl min-w-[200px] text-slate-800 dark:text-warm-900">
-              <div className="font-bold text-sm mb-1 text-slate-900 dark:text-warm-900">{popupInfo.station_name}</div>
-              <div className="text-xs text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600 mb-3">{popupInfo.network}</div>
+            <div className="p-3 bg-warm-100 border border-warm-400 rounded-md shadow-2xl min-w-[200px] text-warm-900">
+              <div className="font-bold text-sm mb-1 text-warm-900">{popupInfo.station_name}</div>
+              <div className="text-xs text-warm-600 mb-3">{popupInfo.network}</div>
 
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600">Risk Score:</span>
+                  <span className="text-warm-600">Risk Score:</span>
                   <span className={`font-bold ${popupInfo.risk_score > 0.4 ? 'text-rose-400' : 'text-peach-600'}`}>
                     {(popupInfo.risk_score * 100).toFixed(1)}%
                   </span>
@@ -322,26 +322,26 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
                     <span className="text-rose-400 font-semibold block mb-1 flex items-center gap-1">
                       <AlertTriangle size={12} /> Auto-Diagnosis
                     </span>
-                    <span className="text-slate-700 dark:text-warm-800">{popupInfo.root_cause_diagnosis}</span>
+                    <span className="text-warm-800">{popupInfo.root_cause_diagnosis}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between border-b border-slate-200 dark:border-warm-300 pb-1">
-                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Price/kWh</span>
+                <div className="flex justify-between border-b border-warm-300 pb-1">
+                  <span className="text-warm-600">Price/kWh</span>
                   <span className="font-medium text-amber-400">${popupInfo.current_price?.toFixed(2) || '0.00'}</span>
                 </div>
-                <div className="flex flex-col border-b border-slate-200 dark:border-warm-300 pb-1">
+                <div className="flex flex-col border-b border-warm-300 pb-1">
                   <div className="flex justify-between">
-                    <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Live Utilization</span>
+                    <span className="text-warm-600">Live Utilization</span>
                     <span className="font-medium">{(popupInfo.utilization_rate * 100).toFixed(0)}%</span>
                   </div>
                   <div className="flex justify-between mt-0.5">
-                    <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500 text-[10px] italic">Historical Avg</span>
-                    <span className="font-medium text-[10px] text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600">{(popupInfo.historical_utilization_avg * 100).toFixed(0)}%</span>
+                    <span className="text-warm-600 text-[10px] italic">Historical Avg</span>
+                    <span className="font-medium text-[10px] text-warm-600">{(popupInfo.historical_utilization_avg * 100).toFixed(0)}%</span>
                   </div>
                 </div>
                 <div className="flex justify-between pt-1">
-                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Temp</span>
+                  <span className="text-warm-600">Temp</span>
                   <span className="font-medium">{popupInfo.temperature_f}°F</span>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
                 {popupInfo.risk_score > 0.4 && roleMode === 'admin' && (
                   <button
                     onClick={() => onHeal(popupInfo.station_id)}
-                    className="flex-1 bg-peach-400 hover:bg-peach-500 text-slate-900 dark:text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shadow-lg shadow-peach-400/20"
+                    className="flex-1 bg-peach-400 hover:bg-peach-500 text-warm-900 text-xs font-bold py-1.5 px-3 rounded transition-colors shadow-lg shadow-peach-400/20"
                   >
                     Surge Price
                   </button>
@@ -368,7 +368,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
                 <button
                   onClick={handleDispatchTechnician}
                   disabled={isDispatching}
-                  className="mt-2 w-full flex-1 bg-indigo-500 hover:bg-indigo-600 text-slate-900 dark:text-white text-xs font-bold py-2 px-3 rounded transition-colors shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2"
+                  className="mt-2 w-full flex-1 bg-indigo-500 hover:bg-indigo-600 text-warm-900 text-xs font-bold py-2 px-3 rounded transition-colors shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2"
                 >
                   {isDispatching ? <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> : 'Dispatch Technician'}
                 </button>
@@ -382,7 +382,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
           <button
             onClick={handleFindBestRoute}
             disabled={isRouting || !userLocation}
-            className="px-4 py-3 rounded-lg font-bold text-sm shadow-xl transition-all border bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white border-blue-400 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="px-4 py-3 rounded-lg font-bold text-sm shadow-xl transition-all border bg-blue-600 hover:bg-blue-500 text-white border-blue-400 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isRouting ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -397,7 +397,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
             onClick={() => setShowRoute(!showRoute)}
             className={`px-4 py-2 rounded-lg font-bold text-sm shadow-xl transition-all border ${showRoute
               ? 'bg-rose-500/20 text-rose-400 border-rose-500 hover:bg-rose-500/30'
-              : 'bg-creamy-50 dark:bg-warm-100/80 text-slate-900 dark:text-warm-900 border-slate-200 dark:border-warm-400 hover:bg-white dark:bg-warm-200'
+              : 'bg-warm-100/80 text-warm-900 border-warm-400 hover:bg-warm-200'
               }`}
           >
             {showRoute ? 'Hide Priority Route' : 'Show Revenue Priority Route'}

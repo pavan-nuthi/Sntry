@@ -64,7 +64,7 @@ export default function App() {
               if (latestLog.action === 'TRAFFIC_SURGE_DETECTED' && latestLog.details) {
                 const stName = latestLog.details.station?.split('-')[1] || latestLog.details.station;
                 toast.error(`Traffic Surge Detected: ${stName}! Auto-Heal engaging...`, {
-                  style: { background: '#1e293b', color: '#fb7185', border: '1px solid #9f1239' },
+                  style: { background: '#FFF5F2', color: '#D16E1E', border: '1px solid #FB923C' },
                   duration: 4000
                 });
               }
@@ -90,7 +90,7 @@ export default function App() {
         if (!notifiedHighRiskRef.current.has(s.station_id)) {
           toast.error(`High Risk Alert: ${s.station_name.split('-')[1] || s.station_name} hit ${(s.risk_score * 100).toFixed(0)}% risk!`, {
             icon: '🚨',
-            style: { background: '#1e293b', color: '#fb7185', border: '1px solid #9f1239' },
+            style: { background: '#FFF5F2', color: '#D16E1E', border: '1px solid #FB923C' },
             duration: 5000
           });
           notifiedHighRiskRef.current.add(s.station_id);
@@ -308,11 +308,11 @@ export default function App() {
                   <div className="h-40 w-full mb-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', fontSize: '12px' }} itemStyle={{ color: '#fb7185' }} cursor={{ fill: '#334155' }} />
-                        <Bar dataKey="risk" fill="#fb7185" radius={[4, 4, 0, 0]} name="Risk Score (%)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#DBD6C9" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: '#9F9677', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#9F9677', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: '#FDFBF7', borderColor: '#DBD6C9', fontSize: '12px', color: '#635B4D' }} itemStyle={{ color: '#E57A22' }} cursor={{ fill: '#EBE7DE' }} />
+                        <Bar dataKey="risk" fill="#FB923C" radius={[4, 4, 0, 0]} name="Risk Score (%)" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

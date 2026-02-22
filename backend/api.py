@@ -50,9 +50,9 @@ async def lifespan(app: FastAPI):
         print("Did you run `python main.py` first to generate the .pkl files?")
     yield
     # Clean up here if needed
-    print("Shutting down Data Pigeon backend...")
+    print("Shutting down SNTRY AI backend...")
 
-app = FastAPI(title="Data Pigeon API", lifespan=lifespan)
+app = FastAPI(title="SNTRY AI API", lifespan=lifespan)
 
 # Allow Streamlit frontend to communicate with API
 app.add_middleware(
@@ -65,7 +65,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Data Pigeon Predictive Maintenance API"}
+    return {"message": "Welcome to the SNTRY AI Predictive Maintenance API"}
 
 def _enrich_stations_with_predictions(stations, db, model, encoders, clusterer):
     prediction_batch = []
@@ -326,7 +326,7 @@ async def chat_with_data_pigeon(message: str = Body(..., embed=True), api_key: s
         })
 
     system_instruction = f"""
-    You are Data Pigeon, an AI Assistant for an EV Charging Network dispatcher.
+    You are SNTRY AI, an AI Assistant for an EV Charging Network dispatcher.
     You help analyze the network and prioritize maintenance.
     The Random Forest Machine Learning model has flagged the following stations as HIGH RISK or in need of attention right now:
     {json.dumps(context_data, indent=2)}

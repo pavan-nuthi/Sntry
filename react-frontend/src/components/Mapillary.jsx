@@ -1,10 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Map, { Marker, Popup, NavigationControl, Source, Layer } from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import { AlertTriangle } from 'lucide-react';
+import useSupercluster from 'use-supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default function Mapillary({ stations, roleMode = 'admin', onSimulate, onHeal }) {
+  const mapRef = useRef();
+  const [bounds, setBounds] = useState(null);
+  const [zoom, setZoom] = useState(3.5);
+
   const [popupInfo, setPopupInfo] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [bestRoute, setBestRoute] = useState(null);
@@ -144,15 +149,106 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
     setIsDispatching(false);
   };
 
-  const markers = useMemo(() => stations.map(station => {
-    // Determine color based on risk score
+  const points = useMemo(() => {
+    return stations.map(station => {
+      let category = 'healthy';
+      if (station.risk_score > 0.6) category = 'critical';
+      else if (station.risk_score > 0.4) category = 'warning';
+
+      return {
+        type: "Feature",
+        properties: {
+          cluster: false,
+          stationId: station.station_id,
+          category,
+          station
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [station.longitude, station.latitude]
+        }
+      };
+    });
+  }, [stations]);
+
+  const { clusters, supercluster } = useSupercluster({
+    points,
+    bounds,
+    zoom,
+    options: {
+      radius: 75,
+      maxZoom: 12, // Zoom level beyond which points won't be clustered
+      map: (props) => ({
+        healthy: props.category === 'healthy' ? 1 : 0,
+        warning: props.category === 'warning' ? 1 : 0,
+        critical: props.category === 'critical' ? 1 : 0,
+      }),
+      reduce: (accumulated, props) => {
+        accumulated.healthy += props.healthy;
+        accumulated.warning += props.warning;
+        accumulated.critical += props.critical;
+      }
+    }
+  });
+
+  const clusterMarkers = clusters.map(cluster => {
+    const [longitude, latitude] = cluster.geometry.coordinates;
+    const { cluster: isCluster, point_count } = cluster.properties;
+
+    if (isCluster) {
+      const { healthy, warning, critical } = cluster.properties;
+      const total = healthy + warning + critical;
+
+      const healthyPct = (healthy / total) * 100;
+      const warningPct = (warning / total) * 100;
+      const criticalPct = (critical / total) * 100;
+
+      const gradient = `conic-gradient(
+        #10B981 0% ${healthyPct}%, 
+        #F59E0B ${healthyPct}% ${healthyPct + warningPct}%, 
+        #F43F5E ${healthyPct + warningPct}% 100%
+      )`;
+
+      const size = 30 + (point_count / points.length) * 40;
+
+      return (
+        <Marker key={`cluster-${cluster.id}`} latitude={latitude} longitude={longitude}>
+          <div
+            className="rounded-full shadow-lg border-2 border-white/80 cursor-pointer flex justify-center items-center text-[10px] font-bold transition-transform hover:scale-110 text-slate-800"
+            style={{
+              width: `${size}px`, height: `${size}px`,
+              background: gradient
+            }}
+            onClick={e => {
+              e.originalEvent.stopPropagation();
+              const expansionZoom = Math.min(
+                supercluster.getClusterExpansionZoom(cluster.id),
+                20
+              );
+              mapRef.current?.flyTo({
+                center: [longitude, latitude],
+                zoom: expansionZoom,
+                duration: 500
+              });
+            }}
+          >
+            <div className="bg-[#FDFBF7]/90 rounded-full w-[80%] h-[80%] flex items-center justify-center pointer-events-none">
+              {point_count}
+            </div>
+          </div>
+        </Marker>
+      );
+    }
+
+    // Single point rendering
+    const station = cluster.properties.station;
     let color = '#10B981'; // Emerald 500
     if (station.risk_score > 0.6) color = '#F43F5E'; // Rose 500
     else if (station.risk_score > 0.4) color = '#F59E0B'; // Amber 500
 
     return (
       <Marker
-        key={station.station_id}
+        key={`station-${station.station_id}`}
         longitude={station.longitude}
         latitude={station.latitude}
         anchor="bottom"
@@ -162,19 +258,17 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
         }}
       >
         <div className="relative flex items-center justify-center">
-          {/* Add a subtle pulse for high revenue nodes */}
           {station.risk_score > 0.45 && station.revenue_at_risk_daily > 10 && (
             <div className="absolute w-8 h-8 rounded-full border-2 border-rose-500/50 animate-ping" />
           )}
           <div
-            className={`rounded-full border-2 border-white/70 shadow-lg cursor-pointer transition-transform hover:scale-125 hover:z-50 ${station.risk_score > 0.45 ? 'w-5 h-5' : 'w-4 h-4'
-              }`}
+            className={`rounded-full border-2 border-white/70 shadow-lg cursor-pointer transition-transform hover:scale-125 hover:z-50 ${station.risk_score > 0.45 ? 'w-5 h-5' : 'w-4 h-4'}`}
             style={{ backgroundColor: color }}
           />
         </div>
       </Marker>
     );
-  }), [stations]);
+  });
 
   // Calculate optimal maintenance route (highest revenue at risk first)
   const [showRoute, setShowRoute] = useState(false);
@@ -244,11 +338,24 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
   return (
     <div className="w-full h-full relative border border-warm-300 rounded-md overflow-hidden shadow-2xl">
       <Map
+        ref={mapRef}
         initialViewState={{
           longitude: -95.7129,
           latitude: 37.0902,
           zoom: 3.5,
           pitch: 0,
+        }}
+        onMove={e => {
+          if (mapRef.current) {
+            setBounds(mapRef.current.getMap().getBounds().toArray().flat());
+            setZoom(e.viewState.zoom);
+          }
+        }}
+        onLoad={() => {
+          if (mapRef.current) {
+            setBounds(mapRef.current.getMap().getBounds().toArray().flat());
+            setZoom(mapRef.current.getMap().getZoom());
+          }
         }}
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         mapLib={maplibregl}
@@ -293,7 +400,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
           </Marker>
         ))}
 
-        {markers}
+        {clusterMarkers}
 
         {popupInfo && (
           <Popup

@@ -17,7 +17,9 @@
         "react-dom": "^18.2.0",
         "react-hot-toast": "^2.6.0",
         "react-map-gl": "^7.1.0",
-        "recharts": "^2.15.4"
+        "recharts": "^2.15.4",
+        "supercluster": "^8.0.1",
+        "use-supercluster": "^1.2.0"
     },
     "devDependencies": {
         "@types/react": "^18.2.0",

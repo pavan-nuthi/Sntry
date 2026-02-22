@@ -235,15 +235,34 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
               background: gradient
             }}
             onClick={e => {
-              e.originalEvent.stopPropagation();
-              const expansionZoom = Math.min(
-                supercluster.getClusterExpansionZoom(cluster.id),
-                20
-              );
-              mapRef.current?.flyTo({
+              if (!mapRef.current) return;
+
+              const currentZoom = mapRef.current.getZoom();
+              // Calculate the exact zoom level required to break apart this specific cluster
+              let expansionZoom;
+              try {
+                expansionZoom = Math.min(
+                  supercluster.getClusterExpansionZoom(cluster.id),
+                  50 // Max zoom map limit
+                );
+              } catch (err) {
+                // Fallback if supercluster fails to calculate
+                expansionZoom = currentZoom + 3;
+              }
+
+              // If the expansion zoom is somehow less than or equal to current zoom, force a zoom in
+              if (expansionZoom <= currentZoom) {
+                expansionZoom = currentZoom + 2.5;
+              }
+
+              console.log(`Zooming into cluster ${cluster.id} from zoom ${currentZoom} to ${expansionZoom}`);
+
+              mapRef.current.flyTo({
                 center: [longitude, latitude],
                 zoom: expansionZoom,
-                duration: 500
+                speed: 1.2,
+                curve: 1.4,
+                essential: true
               });
             }}
           >
@@ -251,7 +270,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
               {point_count}
             </div>
           </div>
-        </Marker>
+        </Marker >
       );
     }
 

@@ -103,3 +103,5 @@ old/
 
 # End of .gitignore
 predictive_maintenance_model.pkl
+ev_charging_station_data 2.csv
+*.pkl

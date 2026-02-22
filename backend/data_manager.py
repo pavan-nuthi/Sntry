@@ -31,7 +31,8 @@ class DataManager:
             
         # Get a list of unique stations and sample them
         unique_stations = df['station_id'].unique()
-        sampled_station_ids = np.random.choice(unique_stations, self.num_stations, replace=False)
+        sample_size = min(self.num_stations, len(unique_stations))
+        sampled_station_ids = np.random.choice(unique_stations, sample_size, replace=False)
         
         # Filter for only those stations and sort chronologically
         self.raw_data = df[df['station_id'].isin(sampled_station_ids)].copy()

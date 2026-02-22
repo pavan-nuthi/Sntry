@@ -151,29 +151,29 @@ export default function App() {
     }));
 
   return (
-    <div className="min-h-screen text-warm-900" style={{background: 'radial-gradient(circle at 70% 30%, var(--color-peach-50) 0%, var(--color-warm-100) 60%, var(--color-peach-100) 100%)'}}>
+    <div className="min-h-screen text-warm-900" style={{ background: 'radial-gradient(circle at 70% 30%, var(--color-peach-50) 0%, var(--color-warm-100) 60%, var(--color-peach-100) 100%)' }}>
       <Toaster position="top-right" />
-      <header className="border-b border-warm-300 p-4 sticky top-0 bg-warm-50/80 backdrop-blur-md z-50">
+      <header className="border-b border-[#C7BFA5] p-4 sticky top-0 bg-[#FDFBF7]/80 backdrop-blur-md z-50">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Zap className="text-peach-400" />
-            <h1 className="text-xl font-bold tracking-tight text-warm-900">Data Pigeon</h1>
+            <Zap className="text-[#FB923C]" />
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">SNTRY</h1>
           </div>
 
           {/* Top Right Controls */}
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
 
             {/* Role Mode Toggle */}
-            <div className="flex bg-warm-200/80 p-1 rounded-lg border border-warm-400 w-auto gap-1 mr-4">
+            <div className="flex bg-[#EBE7DE]/80 p-1 rounded-lg border border-[#C7BFA5] w-auto gap-1 mr-4">
               <button
                 onClick={() => { setRoleMode('admin'); }}
-                className={`px-4 py-1.5 text-sm font-bold transition-all rounded-md flex items-center gap-1 ${roleMode === 'admin' ? 'bg-peach-400 text-warm-900' : 'text-peach-400'}`}
+                className={`px-4 py-1.5 text-sm font-bold transition-all rounded-md flex items-center gap-1 ${roleMode === 'admin' ? 'bg-[#FB923C] text-slate-900/70' : 'text-slate-900/70'}`}
               >
                 Admin
               </button>
               <button
                 onClick={() => { setRoleMode('client'); setViewMode('live'); }}
-                className={`px-4 py-1.5 text-sm font-bold transition-all rounded-md flex items-center gap-1 ${roleMode === 'client' ? 'bg-peach-500 text-warm-900 shadow-md border border-peach-400' : 'text-warm-600 hover:text-warm-900 hover:bg-warm-300/50'}`}
+                className={`px-4 py-1.5 text-sm font-bold transition-all rounded-md flex items-center gap-1 ${roleMode === 'client' ? 'bg-[#FB923C] text-slate-900/70 shadow-md border border-[#C7BFA5]' : 'text-slate-900/70 hover:text-warm-900 hover:bg-[#EBE7DE]/50'}`}
               >
                 Client
               </button>
@@ -181,16 +181,16 @@ export default function App() {
 
             {/* View Mode Toggle */}
             {roleMode === 'admin' && (
-              <div className="flex bg-warm-200/80 p-1 rounded-lg border border-warm-400 w-auto gap-1 flex-shrink-0">
+              <div className="flex bg-[#EBE7DE]/80 p-1 rounded-lg border border-[#C7BFA5] w-auto gap-1 flex-shrink-0">
                 <button
                   onClick={() => { setViewMode('live'); setStartDate(''); setEndDate(''); setTimeframe('0'); fetchStations(); }}
-                  className={`px-3 py-1 rounded-md text-sm font-bold transition-all flex items-center gap-1 ${viewMode === 'live' ? 'bg-warm-50 text-peach-600 shadow-md border border-warm-300' : 'text-warm-600 hover:text-warm-900 hover:bg-warm-300/50'}`}
+                  className={`px-3 py-1 rounded-md text-sm font-bold transition-all flex items-center gap-1 ${viewMode === 'live' ? 'bg-[#FB923C] text-slate-900/70 shadow-md border border-[#C7BFA5]' : 'text-slate-900/70 hover:text-warm-900 hover:bg-[#EBE7DE]/50'}`}
                 >
                   <Zap size={14} /> Live View
                 </button>
                 <button
                   onClick={() => { setViewMode('historical'); }}
-                  className={`px-3 py-1 rounded-md text-sm font-bold transition-all flex items-center gap-1 ${viewMode === 'historical' ? 'bg-warm-50 text-indigo-400 shadow-md border border-warm-300' : 'text-warm-600 hover:text-warm-900 hover:bg-warm-300/50'}`}
+                  className={`px-3 py-1 rounded-md text-sm font-bold transition-all flex items-center gap-1 ${viewMode === 'historical' ? 'bg-[#FB923C] text-slate-900/70 shadow-md border border-[#C7BFA5]' : 'text-slate-900/70 hover:text-warm-900 hover:bg-[#EBE7DE]/50'}`}
                 >
                   <Activity size={14} /> Historical
                 </button>
@@ -200,7 +200,7 @@ export default function App() {
             {/* Historical Data Filter Tools */}
             {roleMode === 'admin' && viewMode === 'historical' && (
               <>
-                <div className="flex bg-warm-200/80 p-1 rounded-lg border border-warm-400 w-auto overflow-x-auto gap-1 hide-scrollbar">
+                <div className="flex bg-[#EBE7DE]/80 p-1 rounded-lg border border-[#C7BFA5] w-auto overflow-x-auto gap-1 hide-scrollbar">
                   {availableTimeframes.filter(tf => tf.id !== '0').map((tf) => (
                     <button
                       key={tf.id}
@@ -210,8 +210,8 @@ export default function App() {
                         setTimeframe(tf.id);
                       }}
                       className={`whitespace-nowrap py-1 px-3 rounded-md text-sm font-bold transition-all ${timeframe === tf.id && !startDate
-                        ? 'bg-warm-50 text-indigo-400 shadow-md border border-warm-300'
-                        : 'text-warm-600 hover:text-warm-900 hover:bg-warm-300/50'
+                        ? 'bg-[#C7BFA5] text-warm-900 shadow-md border border-[#C7BFA5]'
+                        : 'text-slate-900/80 hover:text-warm-900 hover:bg-[#EBE7DE]/50'
                         }`}
                     >
                       {tf.label}
@@ -220,24 +220,24 @@ export default function App() {
                 </div>
 
                 {/* Custom Date Range Picker */}
-                <div className="flex items-center gap-2 bg-warm-100 border border-warm-400 rounded-lg p-1">
+                <div className="flex items-center gap-2 bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg p-1">
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="bg-warm-200 text-warm-800 text-sm px-2 py-1 rounded border-none focus:ring-1 focus:ring-emerald-500 outline-none"
+                    className="bg-[#EBE7DE]/80 text-slate-900/80 text-sm px-2 py-1 rounded border-none focus:ring-1 focus:ring-[#C7BFA5] outline-none"
                   />
-                  <span className="text-warm-500 text-sm">to</span>
+                  <span className="text-slate-900/80 text-sm">to</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-warm-200 text-warm-800 text-sm px-2 py-1 rounded border-none focus:ring-1 focus:ring-emerald-500 outline-none"
+                    className="bg-[#EBE7DE]/80 text-slate-900/80 text-sm px-2 py-1 rounded border-none focus:ring-1 focus:ring-[#C7BFA5] outline-none"
                   />
                   <button
                     onClick={fetchStations}
                     disabled={!startDate || !endDate}
-                    className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-sm font-bold px-3 py-1 rounded transition-colors disabled:opacity-50"
+                    className="bg-[#C7BFA5]/10 hover:bg-[#C7BFA5]/20 text-slate-900/80 text-sm font-bold px-3 py-1 rounded transition-colors disabled:opacity-50"
                   >
                     Apply
                   </button>
@@ -248,10 +248,10 @@ export default function App() {
 
           <div className="flex items-center gap-4 text-sm font-medium">
             <span className="flex items-center gap-2">
-              <Activity size={16} className="text-warm-400" /> {stations.length} Active Node{stations.length !== 1 ? 's' : ''}
+              <Activity size={16} className="text-slate-900/70" /> {stations.length} Active Node{stations.length !== 1 ? 's' : ''}
             </span>
             <span className="flex items-center gap-2">
-              <AlertCircle size={16} className={highRiskCount > 0 ? "text-rose-400" : "text-warm-400"} />
+              <AlertCircle size={16} className={highRiskCount > 0 ? "text-rose-400" : "text-slate-900/70"} />
               {highRiskCount} Risk Alerts
             </span>
           </div>
@@ -261,12 +261,12 @@ export default function App() {
       <main className="container mx-auto p-4 flex-1 flex flex-col h-[calc(100vh-80px)]">
         {loading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-peach-400"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C7BFA5]"></div>
           </div>
         ) : (
           <div className={`grid grid-cols-1 ${roleMode === 'admin' ? 'md:grid-cols-3 gap-6' : 'md:grid-cols-1'} h-full min-h-0`}>
 
-            <div className={`${roleMode === 'admin' ? 'md:col-span-2' : ''} h-full min-h-[500px] rounded-md overflow-hidden border border-warm-300 shadow-2xl`}>
+            <div className={`${roleMode === 'admin' ? 'md:col-span-2' : ''} h-full min-h-[500px] rounded-md overflow-hidden border border-[#C7BFA5] shadow-2xl`}>
               <div className="h-full relative overflow-hidden flex flex-col">
                 <Mapillary
                   stations={stations}
@@ -281,13 +281,13 @@ export default function App() {
             {roleMode === 'admin' && (
               <div className="flex flex-col gap-6 h-full min-h-0">
                 {/* Analytics Top Half */}
-                <div className="bg-warm-100 border border-warm-300 rounded-md p-5 shadow-xl flex flex-col gap-4 flex-shrink-0">
+                <div className="bg-[#FDFBF7]/80 border border-[#C7BFA5] rounded-md p-5 shadow-xl flex flex-col gap-4 flex-shrink-0">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-warm-900 flex items-center gap-2"><Activity size={18} /> Predictive Analytics</h3>
+                    <h3 className="font-semibold text-slate-900/80 flex items-center gap-2"><Activity size={18} /> Predictive Analytics</h3>
                     <button
                       onClick={handleRetrain}
                       disabled={isRetraining}
-                      className="flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs px-2 py-1 rounded transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 bg-[#C7BFA5]/10 hover:bg-[#C7BFA5]/20 text-slate-900/80 text-xs px-2 py-1 rounded transition-colors disabled:opacity-50"
                     >
                       <RefreshCw size={12} className={isRetraining ? "animate-spin" : ""} />
                       {isRetraining ? "Training..." : "Retrain Model"}
@@ -295,12 +295,12 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-2">
-                    <div className="bg-warm-200/50 p-2 rounded border border-warm-400">
-                      <div className="text-[10px] text-warm-600 uppercase tracking-wide">Revenue @ Risk</div>
+                    <div className="bg-[#EBE7DE]/80 p-2 rounded border border-[#C7BFA5]">
+                      <div className="text-[10px] text-slate-900/80 uppercase tracking-wide">Revenue @ Risk</div>
                       <div className="text-lg font-bold text-rose-400">${totalRevenueAtRisk.toFixed(2)}</div>
                     </div>
-                    <div className="bg-warm-200/50 p-2 rounded border border-warm-400">
-                      <div className="text-[10px] text-warm-600 uppercase tracking-wide">Avg Utilization</div>
+                    <div className="bg-[#EBE7DE]/80 p-2 rounded border border-[#C7BFA5]">
+                      <div className="text-[10px] text-slate-900/80 uppercase tracking-wide">Avg Utilization</div>
                       <div className="text-lg font-bold text-peach-600">{(avgUtilization * 100).toFixed(1)}%</div>
                     </div>
                   </div>
@@ -319,19 +319,19 @@ export default function App() {
 
                   <div className="space-y-4 overflow-y-auto max-h-[300px] hide-scrollbar">
                     {stations.sort((a, b) => b.risk_score - a.risk_score).slice(0, 3).map(station => (
-                      <div key={station.station_id} className="p-3 bg-warm-200/50 rounded-lg border border-warm-400">
+                      <div key={station.station_id} className="p-3 bg-[#EBE7DE]/80 rounded-lg border border-[#C7BFA5]">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="font-medium text-warm-900 text-sm truncate pr-2" title={station.station_name}>{station.station_name}</div>
+                          <div className="font-medium text-slate-900/80 text-sm truncate pr-2" title={station.station_name}>{station.station_name}</div>
                           <div className={`px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap ${station.risk_score > 0.6 ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}`}>
                             {(station.risk_score * 100).toFixed(0)}% Risk
                           </div>
                         </div>
-                        <div className="text-xs text-warm-600 flex justify-between items-center mt-2">
+                        <div className="text-xs text-slate-900/80 flex justify-between items-center mt-2">
                           <span>Load: {(station.utilization_rate * 100).toFixed(1)}%</span>
                           <div className="flex gap-2">
                             <button onClick={() => handleSimulate(station.station_id)} className="text-rose-400 hover:text-rose-300 font-medium px-2 py-1 rounded bg-rose-500/10 transition-colors">Stress</button>
                             {station.risk_score > 0.4 && (
-                              <button onClick={() => handleHeal(station.station_id)} className="text-peach-600 hover:text-emerald-300 font-medium px-2 py-1 rounded bg-peach-400/10 transition-colors">Heal</button>
+                              <button onClick={() => handleHeal(station.station_id)} className="text-slate-900/80 hover:text-emerald-300 font-medium px-2 py-1 rounded bg-green-500/50 transition-colors">Heal</button>
                             )}
                           </div>
                         </div>
@@ -341,32 +341,33 @@ export default function App() {
                 </div>
 
                 {/* System Logs Panel - Expanded */}
-                <div className="bg-warm-100 border border-warm-300 rounded-md p-5 shadow-xl flex flex-col gap-3 flex-1 min-h-[350px]">
-                  <h3 className="font-semibold text-warm-900 flex items-center gap-2">
+                <div className="bg-[#FDFBF7]/80 border border-[#C7BFA5] rounded-md p-5 shadow-xl flex flex-col gap-3 flex-1 min-h-[350px]">
+                  <h3 className="font-semibold text-slate-900/80 flex items-center gap-2">
                     <Activity size={18} /> Live Auto-Heal Logs
                   </h3>
                   <div className="overflow-y-auto space-y-2 text-xs font-mono hide-scrollbar h-full">
                     {logs.length === 0 ? (
-                      <div className="text-warm-500 italic mt-2">Waiting for simulation events...</div>
+                      <div className="text-slate-900/70 italic mt-2">Waiting for simulation events...</div>
                     ) : (
                       [...logs].slice(-10).reverse().map((log, i) => (
-                        <div key={i} className="text-warm-800 border-b border-warm-300 pb-2 mb-2">
+                        <div key={i} className="text-slate-900/70 border-b border-[#C7BFA5] pb-2 mb-2">
                           <div className="flex justify-between">
-                            <span className="text-warm-500">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                            <span className="text-peach-600 font-bold">{log.action}</span>
+                            <span className="text-slate-900/70">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                            <span className="text-slate-900/80 font-bold">{log.action}</span>
                           </div>
                           {log.action === 'TRAFFIC_SURGE_DETECTED' && log.details ? (
-                            <div className="mt-1 space-y-0.5 bg-warm-200/50 p-1.5 rounded border border-amber-900/30">
+                            <div className="mt-1 space-y-0.5 bg-[#EBE7DE]/80 p-1.5 rounded border border-[#C7BFA5]">
                               <div className="flex justify-between">
                                 <span className="truncate pr-2 max-w-[120px]" title={log.details.station}>
                                   Spike: {log.details.station?.split('-')[1] || log.details.station}
+                                  {console.log(log)}
                                 </span>
-                                <span className="text-amber-400 font-medium">98% Load</span>
+                                <span className="text-amber-400 font-medium">{log.details.load}% Load</span>
                               </div>
-                              <div className="text-[10px] text-warm-600 mt-1">{log.details.warning}</div>
+                              <div className="text-[10px] text-slate-900/70 mt-1">{log.details.warning}</div>
                             </div>
                           ) : log.details && log.details.stressed_station ? (
-                            <div className="mt-1 space-y-0.5 bg-warm-200/50 p-1.5 rounded">
+                            <div className="mt-1 space-y-0.5 bg-[#EBE7DE]/80 p-1.5 rounded">
                               <div className="flex justify-between">
                                 <span className="truncate pr-2 max-w-[120px]" title={log.details.stressed_station}>
                                   Surge: {log.details.stressed_station?.split('-')[1] || log.details.stressed_station}
@@ -374,11 +375,11 @@ export default function App() {
                                 <span className="text-rose-400 font-medium">{log.details.stressed_price_increase}</span>
                               </div>
                               {log.details.rerouted_station !== "None" && (
-                                <div className="flex justify-between mt-0.5 border-t border-warm-400/50 pt-0.5">
+                                <div className="flex justify-between mt-0.5 border-t border-[#C7BFA5] pt-0.5">
                                   <span className="truncate pr-2 max-w-[120px]" title={log.details.rerouted_station}>
                                     Reroute: {log.details.rerouted_station?.split('-')[1] || log.details.rerouted_station}
                                   </span>
-                                  <span className="text-peach-600 font-medium">{log.details.rerouted_price_decrease}</span>
+                                  <span className="text-slate-900/80 font-medium">{log.details.rerouted_price_decrease}</span>
                                 </div>
                               )}
                             </div>
@@ -404,7 +405,7 @@ export default function App() {
         )}
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className={`p-4 rounded-full shadow-2xl shadow-peach-400/20 transition-all hover:scale-105 active:scale-95 ${isChatOpen ? 'bg-warm-200 text-warm-600 border border-warm-400' : 'bg-peach-400 text-warm-900'}`}
+          className={`p-4 rounded-full shadow-2xl shadow-peach-400/20 transition-all hover:scale-105 active:scale-95 ${isChatOpen ? 'bg-[#9F9677] text-[#FDFBF7] border border-[#C7BFA5]' : 'bg-[#9F9677] text-[#FDFBF7]'}`}
         >
           <MessageSquare size={24} />
         </button>

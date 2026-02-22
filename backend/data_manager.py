@@ -332,13 +332,15 @@ class DataManager:
                     idx = self.active_stations.index[self.active_stations['station_id'] == random_victim['station_id']].tolist()[0]
                     
                     # Force a massive, sudden surge in traffic/wait time
-                    self.active_stations.at[idx, 'utilization_rate'] = 0.98
+                    surge_utilization = np.random.uniform(0.95, 1.0)
+                    self.active_stations.at[idx, 'utilization_rate'] = surge_utilization
                     self.active_stations.at[idx, 'estimated_wait_time_mins'] = 45.0
                     self.active_stations.at[idx, 'temperature_f'] = random_victim['temperature_f'] + 20.0 # Heats up
                     
                     self.log_event("TRAFFIC_SURGE_DETECTED", {
                         "station": random_victim['station_name'],
-                        "warning": f"Unexpected traffic spike! Utilization hit 98%."
+                        "load": round(surge_utilization * 100, 1),
+                        "warning": f"Unexpected traffic spike! Utilization hit {round(surge_utilization * 100, 1)}%."
                     })
 
         # 4. Systematic Auto-Healing Sweep 

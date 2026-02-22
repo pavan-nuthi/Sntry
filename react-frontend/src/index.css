@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Color palette variables */
+  --color-warm-50: #FDFBF7;
+  --color-warm-100: #F7F4EB;
+  --color-warm-200: #EBE7DE;
+  --color-warm-300: #DBD6C9;
+  --color-warm-400: #C7BFA5;
+  --color-warm-500: #B3A98B;
+  --color-warm-600: #9F9677;
+  --color-warm-700: #8B8369;
+  --color-warm-800: #776F5B;
+  --color-warm-900: #635B4D;
+
+  --color-peach-50: #FFF5F2;
+  --color-peach-100: #FFE8DF;
+  --color-peach-200: #FFD1C2;
+  --color-peach-400: #FB923C;
+  --color-peach-500: #E57A22;
+  --color-peach-600: #D16E1E;
+  --color-peach-700: #BD621A;
+  --color-peach-800: #A95616;
+  --color-peach-900: #954A12;
+
+  /* Creamy/peachy light background with soft radial gradient */
+  background: radial-gradient(circle at 70% 30%, var(--color-peach-50) 0%, var(--color-warm-100) 60%, var(--color-peach-100) 100%);
+  color: var(--color-warm-900);
+}
+
+code {
+ font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+}

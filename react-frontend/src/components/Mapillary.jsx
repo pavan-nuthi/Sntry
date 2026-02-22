@@ -1,0 +1,409 @@
+import { useState, useMemo, useEffect } from 'react';
+import Map, { Marker, Popup, NavigationControl, Source, Layer } from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+import { AlertTriangle } from 'lucide-react';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
+export default function Mapillary({ stations, roleMode = 'admin', onSimulate, onHeal }) {
+  const [popupInfo, setPopupInfo] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [bestRoute, setBestRoute] = useState(null);
+  const [isRouting, setIsRouting] = useState(false);
+
+  // Admin Features
+  const [serviceCenters, setServiceCenters] = useState([]);
+  const [technicianRoute, setTechnicianRoute] = useState(null);
+  const [isDispatching, setIsDispatching] = useState(false);
+
+  // Generate service centers exactly once when stations load
+  useEffect(() => {
+    if (stations.length > 0 && serviceCenters.length === 0) {
+      const centers = [];
+      const cities = [...new Set(stations.map(s => s.city))].filter(Boolean);
+      cities.forEach(city => {
+        const cityStations = stations.filter(s => s.city === city);
+        if (cityStations.length > 0) {
+          const ref1 = cityStations[0];
+          const ref2 = cityStations[cityStations.length - 1]; // Could be the same if only 1 node
+          centers.push({
+            id: `sc-${city}-1`,
+            name: `${city} Service Center A`,
+            longitude: ref1.longitude + 0.05,
+            latitude: ref1.latitude + 0.05
+          });
+          centers.push({
+            id: `sc-${city}-2`,
+            name: `${city} Service Center B`,
+            longitude: ref2.longitude - 0.05,
+            latitude: ref2.latitude - 0.05
+          });
+        }
+      });
+      setServiceCenters(centers);
+    }
+  }, [stations, serviceCenters.length]);
+
+  // Generate a random user location near an existing station exactly once when stations load
+  useEffect(() => {
+    if (stations.length > 0 && !userLocation) {
+      // Pick a random station to act as the "city center"
+      const randomCityCenter = stations[Math.floor(Math.random() * stations.length)];
+      // Offset the user's location by a random small amount (roughly 2-5 miles)
+      const latOffset = (Math.random() - 0.5) * 0.05;
+      const lonOffset = (Math.random() - 0.5) * 0.05;
+      setUserLocation([randomCityCenter.longitude + lonOffset, randomCityCenter.latitude + latOffset]);
+    }
+  }, [stations, userLocation]);
+
+  // Haversine Distance Formula
+  const getDistanceInKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth Radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const handleFindBestRoute = async () => {
+    if (!userLocation) return;
+    setIsRouting(true);
+
+    // Find the best station by weighing distance and price
+    // Filter out broken/offline stations
+    const healthyStations = stations.filter(s => !s.needs_maintenance && s.utilization_rate < 0.90);
+
+    let optimalStation = null;
+    let bestScore = Infinity;
+
+    healthyStations.forEach(s => {
+      const distKm = getDistanceInKm(userLocation[1], userLocation[0], s.latitude, s.longitude);
+      // Heuristic Score: 10km of driving roughly equals $1 penalty
+      // Lower score is better
+      const price = s.current_price || 0.45;
+      const score = (distKm / 10) + price;
+
+      if (score < bestScore) {
+        bestScore = score;
+        optimalStation = s;
+      }
+    });
+
+    if (optimalStation) {
+      // Fetch precise turn-by-turn geometry from Open Source Routing Machine
+      const url = `https://router.project-osrm.org/route/v1/driving/${userLocation[0]},${userLocation[1]};${optimalStation.longitude},${optimalStation.latitude}?geometries=geojson&overview=full`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+          setBestRoute({
+            type: 'Feature',
+            geometry: data.routes[0].geometry
+          });
+          setPopupInfo(optimalStation); // Auto-open the popup for the destination
+        }
+      } catch (err) {
+        console.error("Failed to fetch OSRM route:", err);
+      }
+    }
+    setIsRouting(false);
+  };
+
+  const handleDispatchTechnician = async () => {
+    if (!popupInfo) return;
+    setIsDispatching(true);
+
+    // Find the nearest service center
+    let nearestCenter = null;
+    let minDistance = Infinity;
+    serviceCenters.forEach(sc => {
+      const dist = getDistanceInKm(popupInfo.latitude, popupInfo.longitude, sc.latitude, sc.longitude);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestCenter = sc;
+      }
+    });
+
+    if (nearestCenter) {
+      // Fetch precise turn-by-turn geometry for the Technician
+      const url = `https://router.project-osrm.org/route/v1/driving/${nearestCenter.longitude},${nearestCenter.latitude};${popupInfo.longitude},${popupInfo.latitude}?geometries=geojson&overview=full`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+          setTechnicianRoute({
+            type: 'Feature',
+            geometry: data.routes[0].geometry
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch OSRM route for tech:", err);
+      }
+    }
+    setIsDispatching(false);
+  };
+
+  const markers = useMemo(() => stations.map(station => {
+    // Determine color based on risk score
+    let color = '#10B981'; // Emerald 500
+    if (station.risk_score > 0.6) color = '#F43F5E'; // Rose 500
+    else if (station.risk_score > 0.4) color = '#F59E0B'; // Amber 500
+
+    return (
+      <Marker
+        key={station.station_id}
+        longitude={station.longitude}
+        latitude={station.latitude}
+        anchor="bottom"
+        onClick={e => {
+          e.originalEvent.stopPropagation();
+          setPopupInfo(station);
+        }}
+      >
+        <div className="relative flex items-center justify-center">
+          {/* Add a subtle pulse for high revenue nodes */}
+          {station.risk_score > 0.45 && station.revenue_at_risk_daily > 10 && (
+            <div className="absolute w-8 h-8 rounded-full border-2 border-rose-500/50 animate-ping" />
+          )}
+          <div
+            className={`rounded-full border-2 border-[#0E1117] shadow-lg cursor-pointer transition-transform hover:scale-125 hover:z-50 ${station.risk_score > 0.45 ? 'w-5 h-5' : 'w-4 h-4'
+              }`}
+            style={{ backgroundColor: color }}
+          />
+        </div>
+      </Marker>
+    );
+  }), [stations]);
+
+  // Calculate optimal maintenance route (highest revenue at risk first)
+  const [showRoute, setShowRoute] = useState(false);
+  const routeData = useMemo(() => {
+    const failingStations = stations.filter(s => s.needs_maintenance || s.risk_score > 0.45);
+    // Sort by revenue at risk descending to prioritize the most expensive outages
+    const sortedStations = failingStations.sort((a, b) => (b.revenue_at_risk_daily || 0) - (a.revenue_at_risk_daily || 0));
+
+    const coordinates = sortedStations.map(s => [s.longitude, s.latitude]);
+
+    return {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: coordinates
+      }
+    };
+  }, [stations]);
+
+  const routeLayerStyle = {
+    id: 'route-line',
+    type: 'line',
+    source: 'route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': '#F43F5E', // Rose 500
+      'line-width': 3,
+      'line-dasharray': [2, 2],
+      'line-opacity': 0.8
+    }
+  };
+
+  const bestRouteLayerStyle = {
+    id: 'best-route-line',
+    type: 'line',
+    source: 'best-route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': '#3B82F6', // Blue 500
+      'line-width': 5,
+      'line-opacity': 0.9
+    }
+  };
+
+  const techRouteLayerStyle = {
+    id: 'tech-route-line',
+    type: 'line',
+    source: 'tech-route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': '#F59E0B', // Amber 500
+      'line-width': 5,
+      'line-opacity': 0.9
+    }
+  };
+
+  return (
+    <div className="w-full h-full relative border border-slate-200 dark:border-warm-300 rounded-md overflow-hidden shadow-2xl">
+      <Map
+        initialViewState={{
+          longitude: -95.7129,
+          latitude: 37.0902,
+          zoom: 3.5,
+          pitch: 0,
+        }}
+        mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+        mapLib={maplibregl}
+        interactiveLayerIds={['data']}
+      >
+        <NavigationControl position="top-right" />
+
+        {roleMode === 'admin' && showRoute && routeData.geometry.coordinates.length > 1 && (
+          <Source id="route" type="geojson" data={routeData}>
+            <Layer {...routeLayerStyle} />
+          </Source>
+        )}
+
+        {roleMode === 'client' && bestRoute && (
+          <Source id="best-route" type="geojson" data={bestRoute}>
+            <Layer {...bestRouteLayerStyle} />
+          </Source>
+        )}
+
+        {roleMode === 'admin' && technicianRoute && (
+          <Source id="tech-route" type="geojson" data={technicianRoute}>
+            <Layer {...techRouteLayerStyle} />
+          </Source>
+        )}
+
+        {/* The User's Car Pin */}
+        {roleMode === 'client' && userLocation && (
+          <Marker longitude={userLocation[0]} latitude={userLocation[1]} anchor="center">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute w-8 h-8 rounded-full border-2 border-blue-400/50 animate-ping" />
+              <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-[0_0_15px_rgba(59,130,246,0.5)] z-50 transition-transform hover:scale-125" />
+            </div>
+          </Marker>
+        )}
+
+        {/* Service Centers */}
+        {roleMode === 'admin' && serviceCenters.map(sc => (
+          <Marker key={sc.id} longitude={sc.longitude} latitude={sc.latitude} anchor="bottom">
+            <div className="text-2xl filter drop-shadow shadow-black/50 hover:scale-125 transition-transform cursor-pointer" title={sc.name}>
+              🏠
+            </div>
+          </Marker>
+        ))}
+
+        {markers}
+
+        {popupInfo && (
+          <Popup
+            anchor="top"
+            longitude={Number(popupInfo.longitude)}
+            latitude={Number(popupInfo.latitude)}
+            onClose={() => setPopupInfo(null)}
+            className="z-50"
+            closeButton={false}
+          >
+            <div className="p-3 bg-white dark:bg-warm-100 border border-slate-200 dark:border-warm-400 rounded-md shadow-2xl min-w-[200px] text-slate-800 dark:text-warm-900">
+              <div className="font-bold text-sm mb-1 text-slate-900 dark:text-warm-900">{popupInfo.station_name}</div>
+              <div className="text-xs text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600 mb-3">{popupInfo.network}</div>
+
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600">Risk Score:</span>
+                  <span className={`font-bold ${popupInfo.risk_score > 0.4 ? 'text-rose-400' : 'text-peach-600'}`}>
+                    {(popupInfo.risk_score * 100).toFixed(1)}%
+                  </span>
+                </div>
+
+                {/* Anomaly Auto-Diagnosis */}
+                {popupInfo.needs_maintenance && popupInfo.root_cause_diagnosis && (
+                  <div className="mt-2 p-2 bg-rose-500/10 border border-rose-500/20 rounded text-xs">
+                    <span className="text-rose-400 font-semibold block mb-1 flex items-center gap-1">
+                      <AlertTriangle size={12} /> Auto-Diagnosis
+                    </span>
+                    <span className="text-slate-700 dark:text-warm-800">{popupInfo.root_cause_diagnosis}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-b border-slate-200 dark:border-warm-300 pb-1">
+                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Price/kWh</span>
+                  <span className="font-medium text-amber-400">${popupInfo.current_price?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex flex-col border-b border-slate-200 dark:border-warm-300 pb-1">
+                  <div className="flex justify-between">
+                    <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Live Utilization</span>
+                    <span className="font-medium">{(popupInfo.utilization_rate * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="flex justify-between mt-0.5">
+                    <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500 text-[10px] italic">Historical Avg</span>
+                    <span className="font-medium text-[10px] text-creamy-800 dark:text-warm-600 dark:text-warm-500 dark:text-warm-600">{(popupInfo.historical_utilization_avg * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div className="flex justify-between pt-1">
+                  <span className="text-creamy-800 dark:text-warm-600 dark:text-warm-500">Temp</span>
+                  <span className="font-medium">{popupInfo.temperature_f}°F</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                {/* <button
+                                    onClick={() => onSimulate(popupInfo.station_id)}
+                                    className="flex-1 bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 text-xs font-bold py-1.5 px-3 rounded transition-colors"
+                                >
+                                    Stress
+                                </button> */}
+                {popupInfo.risk_score > 0.4 && roleMode === 'admin' && (
+                  <button
+                    onClick={() => onHeal(popupInfo.station_id)}
+                    className="flex-1 bg-peach-400 hover:bg-peach-500 text-slate-900 dark:text-white text-xs font-bold py-1.5 px-3 rounded transition-colors shadow-lg shadow-peach-400/20"
+                  >
+                    Surge Price
+                  </button>
+                )}
+              </div>
+
+              {/* Dispatch Technician (Admin Only) */}
+              {roleMode === 'admin' && popupInfo.risk_score > 0.6 && (
+                <button
+                  onClick={handleDispatchTechnician}
+                  disabled={isDispatching}
+                  className="mt-2 w-full flex-1 bg-indigo-500 hover:bg-indigo-600 text-slate-900 dark:text-white text-xs font-bold py-2 px-3 rounded transition-colors shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2"
+                >
+                  {isDispatching ? <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> : 'Dispatch Technician'}
+                </button>
+              )}
+            </div>
+          </Popup>
+        )}
+      </Map>
+      <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2">
+        {roleMode === 'client' && (
+          <button
+            onClick={handleFindBestRoute}
+            disabled={isRouting || !userLocation}
+            className="px-4 py-3 rounded-lg font-bold text-sm shadow-xl transition-all border bg-blue-600 hover:bg-blue-500 text-slate-900 dark:text-white border-blue-400 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isRouting ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            ) : (
+              '🚗 Find Nearest / Cheapest Charger'
+            )}
+          </button>
+        )}
+
+        {roleMode === 'admin' && (
+          <button
+            onClick={() => setShowRoute(!showRoute)}
+            className={`px-4 py-2 rounded-lg font-bold text-sm shadow-xl transition-all border ${showRoute
+              ? 'bg-rose-500/20 text-rose-400 border-rose-500 hover:bg-rose-500/30'
+              : 'bg-creamy-50 dark:bg-warm-100/80 text-slate-900 dark:text-warm-900 border-slate-200 dark:border-warm-400 hover:bg-white dark:bg-warm-200'
+              }`}
+          >
+            {showRoute ? 'Hide Priority Route' : 'Show Revenue Priority Route'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

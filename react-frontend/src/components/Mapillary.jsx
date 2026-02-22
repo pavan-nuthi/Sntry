@@ -7,7 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 const superclusterOptions = {
   radius: 50, // Smaller radius means stations need to be closer together to cluster
-  maxZoom: 8, // The threshold zoom level where all clusters break apart into individual pins
+  maxZoom: 6, // The threshold zoom level where all clusters break apart into individual pins
   map: (props) => ({
     healthy: props.category === 'healthy' ? 1 : 0,
     warning: props.category === 'warning' ? 1 : 0,
@@ -24,6 +24,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
   const mapRef = useRef();
   const [bounds, setBounds] = useState(null);
   const [zoom, setZoom] = useState(10);
+  const [nearestStations, setNearestStations] = useState([]);
 
   const [popupInfo, setPopupInfo] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
@@ -85,6 +86,18 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
+
+  // Compute the top 3 nearest stations for the Client View
+  useEffect(() => {
+    if (roleMode === 'client' && userLocation && stations.length > 0) {
+      const distances = stations.map(s => {
+        const distKm = getDistanceInKm(userLocation[1], userLocation[0], s.latitude, s.longitude);
+        return { ...s, distance: distKm };
+      });
+      const sorted = distances.sort((a, b) => a.distance - b.distance).slice(0, 3);
+      setNearestStations(sorted);
+    }
+  }, [userLocation, stations, roleMode]);
 
   const handleFindBestRoute = async () => {
     if (!userLocation) return;
@@ -465,7 +478,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
                 {popupInfo.risk_score > 0.4 && roleMode === 'admin' && (
                   <button
                     onClick={() => onHeal(popupInfo.station_id)}
-                    className="flex-1 bg-peach-400 hover:bg-peach-500 text-warm-900 text-xs font-bold py-1.5 px-3 rounded transition-colors shadow-lg shadow-peach-400/20"
+                    className="flex-1 bg-green-400/70 hover:bg-[#FFCDD2]/80 text-slate-900/80 text-xs font-bold py-1.5 px-3 rounded transition-colors shadow-lg shadow-[#FFCDD2]/20"
                   >
                     Surge Price
                   </button>
@@ -477,7 +490,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
                 <button
                   onClick={handleDispatchTechnician}
                   disabled={isDispatching}
-                  className="mt-2 w-full flex-1 bg-indigo-500 hover:bg-indigo-600 text-warm-900 text-xs font-bold py-2 px-3 rounded transition-colors shadow-lg shadow-indigo-500/20 flex justify-center items-center gap-2"
+                  className="mt-2 w-full flex-1 bg-[#FB923C] hover:bg-[#FB923C]/80 text-slate-900/80 text-xs font-bold py-2 px-3 rounded transition-colors shadow-lg shadow-[#FB923C]/20 flex justify-center items-center gap-2"
                 >
                   {isDispatching ? <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> : 'Dispatch Technician'}
                 </button>
@@ -486,6 +499,38 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
           </Popup>
         )}
       </Map>
+
+      {/* Top Left Floating Panel (Nearest Stations) */}
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
+        {roleMode === 'client' && nearestStations.length > 0 && (
+          <div className="bg-[#FDFBF7]/90 backdrop-blur-md border border-[#C7BFA5] rounded-xl p-3 shadow-xl pointer-events-auto w-64 transition-all">
+            <h3 className="text-sm font-bold text-slate-900/80 mb-2 flex items-center gap-1">
+              Nearest Stations
+            </h3>
+            <div className="space-y-2">
+              {nearestStations.map((station, idx) => (
+                <div key={idx} className="bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg p-2.5 text-xs relative cursor-pointer hover:bg-[#DBD6C9]/60 transition-colors shadow-sm"
+                  onClick={() => {
+                    setPopupInfo(station);
+                    mapRef.current?.flyTo({ center: [station.longitude, station.latitude], zoom: 14, duration: 800 });
+                  }}>
+                  <div className="flex justify-between items-start mb-1.5">
+                    <span className="font-bold text-slate-900/80 truncate pr-2 leading-tight max-w-[150px]">{station.station_name}</span>
+                    <span className="text-[10px] font-bold text-slate-900/50 bg-[#C7BFA5]/20 px-1.5 py-0.5 rounded whitespace-nowrap">{station.distance.toFixed(1)} km</span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className={`${station.risk_score > 0.45 ? 'text-rose-500 font-bold' : 'text-slate-900/70 font-medium'}`}>
+                      Stress: {(station.utilization_rate * 100).toFixed(0)}%
+                    </span>
+                    <span className="font-bold text-amber-500/90 text-xs">${station.current_price?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2">
         {roleMode === 'client' && (
           <button
@@ -496,7 +541,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
             {isRouting ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
-              '🚗 Find Nearest / Cheapest Charger'
+              'Find Optimal Charger'
             )}
           </button>
         )}

@@ -304,7 +304,7 @@ class DataManager:
                 base_temp = row['temperature_f']
                 
             # 2. Add very small randomness
-            noise_util = np.random.normal(0, 0.05)
+            noise_util = np.random.normal(0, 0.2)
             new_util = max(0.0, min(1.0, base_util + noise_util))
             new_temp = base_temp + np.random.normal(0, 2)
             

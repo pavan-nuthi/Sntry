@@ -6,8 +6,8 @@ import useSupercluster from 'use-supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const superclusterOptions = {
-  radius: 75,
-  maxZoom: 12,
+  radius: 50, // Smaller radius means stations need to be closer together to cluster
+  maxZoom: 8, // The threshold zoom level where all clusters break apart into individual pins
   map: (props) => ({
     healthy: props.category === 'healthy' ? 1 : 0,
     warning: props.category === 'warning' ? 1 : 0,
@@ -23,7 +23,7 @@ const superclusterOptions = {
 export default function Mapillary({ stations, roleMode = 'admin', onSimulate, onHeal }) {
   const mapRef = useRef();
   const [bounds, setBounds] = useState(null);
-  const [zoom, setZoom] = useState(3.5);
+  const [zoom, setZoom] = useState(10);
 
   const [popupInfo, setPopupInfo] = useState(null);
   const [userLocation, setUserLocation] = useState(null);

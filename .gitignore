@@ -102,3 +102,4 @@ frontend/requirements.txt
 old/
 
 # End of .gitignore
+predictive_maintenance_model.pkl

@@ -5,6 +5,21 @@ import { AlertTriangle } from 'lucide-react';
 import useSupercluster from 'use-supercluster';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+const superclusterOptions = {
+  radius: 75,
+  maxZoom: 12,
+  map: (props) => ({
+    healthy: props.category === 'healthy' ? 1 : 0,
+    warning: props.category === 'warning' ? 1 : 0,
+    critical: props.category === 'critical' ? 1 : 0,
+  }),
+  reduce: (accumulated, props) => {
+    accumulated.healthy += props.healthy;
+    accumulated.warning += props.warning;
+    accumulated.critical += props.critical;
+  }
+};
+
 export default function Mapillary({ stations, roleMode = 'admin', onSimulate, onHeal }) {
   const mapRef = useRef();
   const [bounds, setBounds] = useState(null);
@@ -175,20 +190,7 @@ export default function Mapillary({ stations, roleMode = 'admin', onSimulate, on
     points,
     bounds,
     zoom,
-    options: {
-      radius: 75,
-      maxZoom: 12, // Zoom level beyond which points won't be clustered
-      map: (props) => ({
-        healthy: props.category === 'healthy' ? 1 : 0,
-        warning: props.category === 'warning' ? 1 : 0,
-        critical: props.category === 'critical' ? 1 : 0,
-      }),
-      reduce: (accumulated, props) => {
-        accumulated.healthy += props.healthy;
-        accumulated.warning += props.warning;
-        accumulated.critical += props.critical;
-      }
-    }
+    options: superclusterOptions
   });
 
   const clusterMarkers = clusters.map(cluster => {

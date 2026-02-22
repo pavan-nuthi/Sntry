@@ -103,19 +103,19 @@ export default function ChatAgent() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-warm-100 border border-warm-300 rounded-md shadow-xl overflow-hidden">
-      <div className="p-3 bg-warm-200/80 border-b border-warm-400 flex flex-col gap-3">
+    <div className="flex flex-col h-[600px] bg-[#F7F4EB] border border-[#DBD6C9] rounded-md shadow-xl overflow-hidden">
+      <div className="p-3 bg-[#EBE7DE]/80 border-b border-[#C7BFA5] flex flex-col gap-3">
         <div className="font-bold text-warm-900 flex items-center gap-2">
-          <Bot size={18} className="text-peach-600" /> Triaging Agent
+          <Bot size={18} className="text-[#D16E1E]" /> Triaging Agent
         </div>
-        <div className="flex items-center gap-2 bg-warm-100 border border-warm-400 rounded-lg px-3 py-1.5 opacity-80 hover:opacity-100 transition-opacity">
-          <Key size={14} className="text-warm-600" />
+        <div className="flex items-center gap-2 bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg px-3 py-1.5 opacity-80 hover:opacity-100 transition-opacity">
+          <Key size={14} className="text-[#9F9677]" />
           <input
             type="password"
             placeholder="Google GenAI API Key (Optional)..."
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            className="bg-transparent border-none text-xs text-warm-800 w-full focus:outline-none placeholder-slate-600 font-mono"
+            className="bg-transparent border-none text-xs text-warm-[#776F5B] w-full focus:outline-none placeholder-slate-600 font-mono"
           />
         </div>
       </div>
@@ -124,11 +124,11 @@ export default function ChatAgent() {
         {messages.map((msg, i) => (
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-[85%] rounded-lg p-3 text-sm flex gap-2 ${msg.role === 'user'
-              ? 'bg-peach-500/30 border border-peach-400/50 text-warm-900'
-              : 'bg-warm-200 border border-warm-400 text-warm-900'
+              ? 'bg-[#E57A22]/30 border border-[#FB923C]/50 text-[#635B4D]'
+              : 'bg-[#EBE7DE]/80 border border-[#C7BFA5] text-warm-[#635B4D]'
               }`}>
               <div className="mt-0.5 opacity-70">
-                {msg.role === 'user' ? <User size={14} /> : <Bot size={14} className="text-peach-600" />}
+                {msg.role === 'user' ? <User size={14} /> : <Bot size={14} className="text-[#D16E1E]" />}
               </div>
               <div className="leading-relaxed whitespace-pre-wrap flex-1">{msg.content}</div>
             </div>
@@ -136,14 +136,14 @@ export default function ChatAgent() {
             {msg.cards && msg.cards.length > 0 && (
               <div className="mt-2 w-[85%] space-y-2">
                 {msg.cards.map((card, idx) => (
-                  <div key={idx} className="bg-warm-200/80 border border-warm-400 rounded-md p-3 text-sm shadow-md">
+                  <div key={idx} className="bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-md p-3 text-sm shadow-md">
                     <div className="flex justify-between items-start mb-1">
-                      <span className="font-bold text-warm-900 text-xs">{card.station_name || card.name}</span>
+                      <span className="font-bold text-warm-[#635B4D] text-xs">{card.station_name || card.name}</span>
                       <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded">{card.risk_score}</span>
                     </div>
-                    <div className="text-[10px] text-warm-600 mb-1">{card.city}</div>
+                    <div className="text-[10px] text-warm-[#635B4D] mb-1">{card.city}</div>
                     <div className="text-[10px] text-amber-400/90 font-medium mb-1">Issue: {card.reason}</div>
-                    {card.details && <div className="text-[10px] text-warm-500">{card.details}</div>}
+                    {card.details && <div className="text-[10px] text-warm-[#635B4D]">{card.details}</div>}
                   </div>
                 ))}
               </div>
@@ -152,7 +152,7 @@ export default function ChatAgent() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-warm-200 border border-warm-400 text-warm-600 rounded-lg p-3 text-sm flex items-center gap-2">
+            <div className="bg-[#EBE7DE]/80 border border-[#C7BFA5] text-warm-[#635B4D] rounded-lg p-3 text-sm flex items-center gap-2">
               <div className="animate-pulse flex gap-1">
                 <div className="w-1.5 h-1.5 bg-slate-500 rounded-full"></div>
                 <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animation-delay-200"></div>
@@ -164,11 +164,11 @@ export default function ChatAgent() {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={sendMessage} className="p-3 bg-warm-200/50 border-t border-warm-400 flex gap-2 items-center">
+      <form onSubmit={sendMessage} className="p-3 bg-[#EBE7DE]/80 border-t border-[#C7BFA5] flex gap-2 items-center">
         <button
           type="button"
           onClick={toggleListen}
-          className={`p-2 rounded-lg transition-colors border ${isListening ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse' : 'bg-warm-200 text-warm-600 border-warm-400 hover:bg-warm-300'}`}
+          className={`p-2 rounded-lg transition-colors border ${isListening ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-pulse' : 'bg-[#EBE7DE]/80 text-warm-[#635B4D] border-[#C7BFA5] hover:bg-[#EBE7DE]/80'}`}
           title="Voice Input"
         >
           {isListening ? <Mic size={16} /> : <MicOff size={16} />}
@@ -178,12 +178,12 @@ export default function ChatAgent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={isListening ? "Listening..." : "Ask Data Pigeon..."}
-          className="flex-1 bg-warm-100 border border-warm-400 rounded-lg px-3 py-2 text-sm text-warm-900 focus:outline-none focus:border-peach-400 transition-colors placeholder-slate-500"
+          className="flex-1 bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg px-3 py-2 text-sm text-warm-[#635B4D] focus:outline-none focus:border-peach-[#D16E1E] transition-colors placeholder-slate-500"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="bg-peach-400 hover:bg-peach-500 disabled:opacity-50 disabled:hover:bg-peach-400 text-warm-900 p-2 rounded-lg transition-colors"
+          className="bg-[#D16E1E] hover:bg-[#D16E1E]/80 disabled:opacity-50 disabled:hover:bg-[#D16E1E] text-black p-2 rounded-lg transition-colors"
         >
           <Send size={16} />
         </button>

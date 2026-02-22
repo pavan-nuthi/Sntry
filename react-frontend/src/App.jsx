@@ -358,7 +358,7 @@ export default function App() {
                           {log.action === 'TRAFFIC_SURGE_DETECTED' && log.details ? (
                             <div className="mt-1 space-y-0.5 bg-[#EBE7DE]/80 p-1.5 rounded border border-[#C7BFA5]">
                               <div className="flex justify-between">
-                                <span className="truncate pr-2 max-w-[120px]" title={log.details.station}>
+                                <span className="truncate pr-2 max-w-fit w-full" title={log.details.station}>
                                   Spike: {log.details.station?.split('-')[1] || log.details.station}
                                   {console.log(log)}
                                 </span>
@@ -369,14 +369,14 @@ export default function App() {
                           ) : log.details && log.details.stressed_station ? (
                             <div className="mt-1 space-y-0.5 bg-[#EBE7DE]/80 p-1.5 rounded">
                               <div className="flex justify-between">
-                                <span className="truncate pr-2 max-w-[120px]" title={log.details.stressed_station}>
+                                <span className="truncate pr-2 max-w-fit" title={log.details.stressed_station}>
                                   Surge: {log.details.stressed_station?.split('-')[1] || log.details.stressed_station}
                                 </span>
                                 <span className="text-rose-400 font-medium">{log.details.stressed_price_increase}</span>
                               </div>
                               {log.details.rerouted_station !== "None" && (
                                 <div className="flex justify-between mt-0.5 border-t border-[#C7BFA5] pt-0.5">
-                                  <span className="truncate pr-2 max-w-[120px]" title={log.details.rerouted_station}>
+                                  <span className="truncate pr-2 max-w-fit" title={log.details.rerouted_station}>
                                     Reroute: {log.details.rerouted_station?.split('-')[1] || log.details.rerouted_station}
                                   </span>
                                   <span className="text-slate-900/80 font-medium">{log.details.rerouted_price_decrease}</span>

@@ -16,12 +16,14 @@ EV charging infrastructure is currently plagued by high failure rates (up to 30%
 
 ## Machine Learning Engine 
 
-### 1. Predictive Maintenance Classifier (Random Forest)
-The core ML pipeline evaluates 21 specific dimensions of telemetry to predict the real-time operational state of the station. During training, it intentionally drops geographic metadata (like `city` and `latitude`) so the model learns universal hardware failure patterns rather than memorizing regional grids.
+### 1. Predictive Maintenance Classifier (Scikit-Learn Random Forest)
+The core ML pipeline evaluates 21 specific dimensions of telemetry to predict the real-time operational state of the station. We chose a **Random Forest Classifier** (`RandomForestClassifier(n_estimators=100)`) because of its unparalleled ability to model non-linear hardware relationships—for example, a charger operating flawlessly at 90°F with low usage, but critically overheating at 90°F with high usage.
+
+Furthermore, Sntry leverages `class_weight='balanced'` within the Random Forest node-splitting algorithm to heavily penalize the model for missing the exceptionally rare "failure" classes within a predominantly healthy dataset. During training, Sntry intentionally drops geographic metadata (like `city` and `latitude`) so the model learns universal hardware failure patterns rather than memorizing regional grids.
 
 - **The Target (What it Predicts):** `station_status`
-- **Classes:** `operational`, `offline`, `partial_outage`, `under_maintenance`.
-- **Primary Predictors:** The model dynamically determined that `estimated_wait_time_mins` (62% importance), `temperature_f` (4%), `utilization_rate` (4%), and `ports_total` (4%) were the strongest warning signs of an impending crash.
+- **Classes:** `operational` (Healthy), `offline` (Severe Network/Hardware Failure), `partial_outage` (Reduced Power Delivery), `under_maintenance`.
+- **Primary Predictors:** The Random Forest naturally calculates Gini Feature Importances dynamically, revealing that `estimated_wait_time_mins` (62% correlation), `temperature_f` (4%), `utilization_rate` (4%), and `ports_total` (4%) form the overwhelming majority of impending crash signatures.
 
 #### The 21 Telemetry Columns Evaluated:
 1. **Hardware & Capacity:** `network`, `charger_type`, `power_output_kw`, `ports_total`
@@ -31,7 +33,9 @@ The core ML pipeline evaluates 21 specific dimensions of telemetry to predict th
 5. **Chronological Seasonality:** `hour_of_day`, `day_of_week`, `month`, `is_weekend`, `is_peak_hour`
 
 ### 2. Root Cause Anomaly Clustering (K-Means)
-To give technicians immediate context, an unsupervised **K-Means Clusterer** was trained strictly on the 103,000+ historical failure events. When the Random Forest predicts an outage, the Anomaly Clusterer groups the telemetry fingerprint into a Root Cause bracket (e.g., Thermal Overload, Network Disconnect) to speed up repairs.
+While the Random Forest predicts *that* a station will fail, Sntry utilizes an unsupervised **K-Means Clusterer** (`KMeans(n_clusters=4)`) to determine *why* it failed.
+
+This unsupervised model was trained strictly on the 103,000+ historical failure events. By mathematically calculating the Euclidean distance between a failing station's live 21-dimensional telemetry array and the 4 established "Root Cause Centroids," the Anomaly Clusterer groups the failure into a context bracket (e.g., Thermal Overload, Network Disconnect). This allows the LLM dispatch system to immediately alert the technician on precisely which replacement parts to bring.
 
 ---
 

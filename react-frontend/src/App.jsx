@@ -6,6 +6,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import Mapillary from './components/Mapillary';
 import ChatAgent from './components/ChatAgent';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export default function App() {
   const [stations, setStations] = useState([]);
   const [availableTimeframes, setAvailableTimeframes] = useState([]);
@@ -23,7 +25,7 @@ export default function App() {
   const fetchStations = async () => {
     setLoading(true);
     try {
-      let url = `http://localhost:8000/api/stations?timeframe=${timeframe}`;
+      let url = `${API_BASE_URL}/api/stations?timeframe=${timeframe}`;
       if (startDate && endDate) {
         url += `&start_date=${startDate}&end_date=${endDate}`;
       }
@@ -50,11 +52,11 @@ export default function App() {
     const interval = setInterval(async () => {
       try {
         const now = new Date().toISOString();
-        const res = await axios.post('http://localhost:8000/api/simulation/tick', { timestamp: now });
+        const res = await axios.post(`${API_BASE_URL}/api/simulation/tick`, { timestamp: now });
         if (res.data.stations) {
           setStations(res.data.stations);
         }
-        const logRes = await axios.get('http://localhost:8000/api/logs');
+        const logRes = await axios.get(`${API_BASE_URL}/api/logs`);
         if (logRes.data.logs) {
           const newLogs = logRes.data.logs;
           setLogs(prevLogs => {
@@ -106,7 +108,7 @@ export default function App() {
 
   const handleHeal = async (stationId) => {
     try {
-      await axios.post(`http://localhost:8000/api/heal/${stationId}`);
+      await axios.post(`${API_BASE_URL}/api/heal/${stationId}`);
       await fetchStations(); // Refresh the map data to see the new prices and lower utilization
     } catch (err) {
       console.error("Failed to trigger self-healing", err);
@@ -115,7 +117,7 @@ export default function App() {
 
   const handleSimulate = async (stationId) => {
     try {
-      await axios.post(`http://localhost:8000/api/simulate/${stationId}`);
+      await axios.post(`${API_BASE_URL}/api/simulate/${stationId}`);
       await fetchStations(); // Refresh to see the spiked metrics
     } catch (err) {
       console.error("Failed to simulate stress", err);
@@ -126,7 +128,7 @@ export default function App() {
     setIsRetraining(true);
     try {
       // Send the POST request to trigger ML retraining
-      const res = await axios.post(`http://localhost:8000/api/train`);
+      const res = await axios.post(`${API_BASE_URL}/api/train`);
       console.log(res.data.message);
       // Re-fetch stations to run them through the freshly loaded model
       await fetchStations();

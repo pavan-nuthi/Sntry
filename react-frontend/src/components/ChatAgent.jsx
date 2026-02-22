@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 export default function ChatAgent() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "I'm the Data Pigeon AI. I now have native integration with Google Gemini! Please drop your API Key below. Ask me to prioritize maintenance or identify high-risk nodes." }
+    { role: 'assistant', content: "I'm the SNTRY AI. Ask me to prioritize maintenance or identify high-risk nodes." }
   ]);
   const [input, setInput] = useState('');
   const [apiKey, setApiKey] = useState(() => {
@@ -80,7 +80,8 @@ export default function ChatAgent() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/chat', {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
         message: userMsg,
         api_key: apiKey || null
       });
@@ -106,7 +107,7 @@ export default function ChatAgent() {
     <div className="flex flex-col h-[600px] bg-[#F7F4EB] border border-[#DBD6C9] rounded-md shadow-xl overflow-hidden">
       <div className="p-3 bg-[#EBE7DE]/80 border-b border-[#C7BFA5] flex flex-col gap-3">
         <div className="font-bold text-warm-900 flex items-center gap-2">
-          <Bot size={18} className="text-[#D16E1E]" /> Triaging Agent
+          <Bot size={18} className="text-[#D16E1E]" /> SNTRY AI
         </div>
         <div className="flex items-center gap-2 bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg px-3 py-1.5 opacity-80 hover:opacity-100 transition-opacity">
           <Key size={14} className="text-[#9F9677]" />
@@ -177,7 +178,7 @@ export default function ChatAgent() {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={isListening ? "Listening..." : "Ask Data Pigeon..."}
+          placeholder={isListening ? "Listening..." : "Ask SNTRY..."}
           className="flex-1 bg-[#EBE7DE]/80 border border-[#C7BFA5] rounded-lg px-3 py-2 text-sm text-warm-[#635B4D] focus:outline-none focus:border-peach-[#D16E1E] transition-colors placeholder-slate-500"
         />
         <button

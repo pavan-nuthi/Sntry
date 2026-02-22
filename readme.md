@@ -17,10 +17,18 @@ EV charging infrastructure is currently plagued by high failure rates (up to 30%
 ## Machine Learning Engine 
 
 ### 1. Predictive Maintenance Classifier (Random Forest)
-The core ML pipeline evaluates 33 dimensions of telemetry (Temperature, Weather, Usage, Traffic, etc.) to predict the real-time operational state of the station.
-- **Training Data:** Sntry was trained on a massive 339MB `ev_charging_station_data` dataset comprising over **1.3 million historical telemetry logs** across 150 unique EV stations.
+The core ML pipeline evaluates 21 specific dimensions of telemetry to predict the real-time operational state of the station. During training, it intentionally drops geographic metadata (like `city` and `latitude`) so the model learns universal hardware failure patterns rather than memorizing regional grids.
+
+- **The Target (What it Predicts):** `station_status`
 - **Classes:** `operational`, `offline`, `partial_outage`, `under_maintenance`.
 - **Primary Predictors:** The model dynamically determined that `estimated_wait_time_mins` (62% importance), `temperature_f` (4%), `utilization_rate` (4%), and `ports_total` (4%) were the strongest warning signs of an impending crash.
+
+#### The 21 Telemetry Columns Evaluated:
+1. **Hardware & Capacity:** `network`, `charger_type`, `power_output_kw`, `ports_total`
+2. **Live Traffic & Usage:** `utilization_rate`, `estimated_wait_time_mins`, `avg_session_duration_mins`, `location_type`
+3. **Economics:** `current_price`, `pricing_type`, `gas_price_per_gallon`
+4. **Environment & Grid:** `temperature_f`, `precipitation_mm`, `weather_condition`, `traffic_congestion_index`, `local_event`
+5. **Chronological Seasonality:** `hour_of_day`, `day_of_week`, `month`, `is_weekend`, `is_peak_hour`
 
 ### 2. Root Cause Anomaly Clustering (K-Means)
 To give technicians immediate context, an unsupervised **K-Means Clusterer** was trained strictly on the 103,000+ historical failure events. When the Random Forest predicts an outage, the Anomaly Clusterer groups the telemetry fingerprint into a Root Cause bracket (e.g., Thermal Overload, Network Disconnect) to speed up repairs.
